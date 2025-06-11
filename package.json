@@ -1,0 +1,40 @@
+{
+	"name": "@securedatasystems/zod-select",
+	"version": "1.0.0",
+	"description": "SecureDataSystems Zod Select",
+	"author": "SecureDataSystems",
+	"license": "MIT",
+	"type": "module",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"files": [
+		"./dist",
+		"package.json",
+		"LICENSE",
+		"README.md"
+	],
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"default": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"build": "node scripts/build.mjs && tsc --project tsconfig.build.json",
+		"lint": "eslint . --c eslint.config.mjs",
+		"lint:fix": "eslint . --c eslint.config.mjs --fix",
+    "test": "glob -c \"tsx --tsconfig ./tsconfig.build.json --test\" \"./src/**/*.{spec,test}.ts\""
+	},
+	"devDependencies": {
+		"@securedatasystems/eslint-config": "^1.0.2",
+		"@securedatasystems/tsconfig": "^1.0.0",
+		"@types/node": "^24.0.0",
+		"glob": "^11.0.2",
+		"tsx": "^4.19.4",
+		"typescript": "^5.8.3"
+	},
+	"dependencies": {
+		"zod": "^3.25.58"
+	}
+}

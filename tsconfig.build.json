@@ -1,0 +1,8 @@
+{
+	"extends": "@securedatasystems/tsconfig/tsconfig.build.json",
+	"include": ["src"],
+	"compilerOptions": {
+		"module": "Node16",
+		"outDir": "dist"
+	}
+}
