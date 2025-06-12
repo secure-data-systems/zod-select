@@ -209,9 +209,10 @@ function getUsersFromTexas<T extends MultiSelect<typeof UserSchema>>(
 	);
 
 	return users.filter((user) =>
-		// At this point the user object has address and whatever fields are specified in the passed in select
-		// but VS code doesn't know what fields are going to be passed in at runtime. It does know that address
-		// was selected inside this function so it is strongly typed with a fully selected address object
+		// At this point the user object has address and whatever fields are specified in the
+		// passed in select but VS code doesn't know what fields are going to be passed in at
+		// runtime. It does know that address was selected inside this function so it is
+		// strongly typed with a fully selected address object
 		user.address.state === 'TX'
 	);
 }
@@ -221,7 +222,8 @@ const users = getUsersFromTexas({
 	lastName: true
 });
 
-// At this point we know what fields we selected and the extra fields added by the getUsersFromTexas function
+// At this point we know what fields we selected and the extra fields added by the
+// getUsersFromTexas function
 ```
 
 ```ts
