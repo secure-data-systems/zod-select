@@ -41,7 +41,7 @@ const UserSchema = z.object({
 
 ---
 
-## 🧠 Basic Select with Inferred Type
+## 🧠 Zod Select with Inferred Type
 
 A single selection object returns a strongly typed result:
 
@@ -68,7 +68,7 @@ const user = find({
 
 ---
 
-## 🔀 Merging Multiple Selects
+## 🔀 Merging Multiple Zod Selects
 
 You can combine multiple select statements and still get precise inference:
 
@@ -93,11 +93,15 @@ const user = find([
 
 ---
 
-## 🧹 Mix Zod Schemas with Selects
+## 🧹 Mix Zod Schemas with Zod Selects
 
 You can mix plain field selections with Zod object schemas for flexible results:
 
 ```ts
+function find<T extends MultiSelect<typeof UserSchema>>(select: T): InferMergedType<typeof UserSchema, T> {
+	// ...Find Logic
+}
+
 const user = find([
 	{ lastName: true },
 	z.object({
@@ -116,7 +120,7 @@ const user = find([
 
 ---
 
-## 🛠️ Convert Selects into Zod Schemas
+## 🛠️ Convert Zod Selects into Zod Schemas
 
 Use `refineSchema` to turn a selection into a Zod schema:
 
@@ -143,7 +147,7 @@ Selections can refine field types inline using Zod methods:
 
 ```ts
 const schema = refineSchema(UserSchema, {
-	firstName: (s) => s.optional()
+	firstName: s => s.optional()
 });
 ```
 
@@ -156,7 +160,7 @@ const schema = refineSchema(UserSchema, {
 
 ---
 
-## 🧬 Replace Field Types
+## 🧬 Redefine Field Types
 
 Selections can also redefine types entirely:
 
@@ -175,11 +179,27 @@ const schema = refineSchema(UserSchema, {
 
 ---
 
-## 🧵 Merge and Extend Selects
+## 🧵 Putting it all together
 
-Combine static selects with runtime selects, e.g., to always include `address` in a filter:
+Combining all methods and types together you can build powerful, type-safe selection logic on top of Zod.
 
 ```ts
+function find<T extends MultiSelect<typeof UserSchema>>(select: T): InferMergedType<typeof UserSchema, T>[] {
+	const selectArr = Array.isArray(select) ? select : [select];
+	const sel: Record<string, 1> = {};
+
+	for (let schema of selectArr) {
+		if (!(schema instanceof ZodType)) {
+			schema = refineSchema(UserSchema, schema);
+			continue;
+		}
+
+		// Crawl each zod schema building the select statement
+	}
+
+	// Find Logic
+}
+
 function getUsersFromTexas<T extends MultiSelect<typeof UserSchema>>(
 	sel: T
 ): InferMergedType<typeof UserSchema, MergeSelect<typeof UserSchema, { address: boolean }, T>>[] {
@@ -192,11 +212,11 @@ function getUsersFromTexas<T extends MultiSelect<typeof UserSchema>>(
 		// At this point the user object has address and whatever fields are specified in the passed in select
 		// but VS code doesn't know what fields are going to be passed in at runtime. It does know that address
 		// was selected inside this function so it is strongly typed with a fully selected address object
-		user.address.state
+		user.address.state === 'TX'
 	);
 }
 
-const user = getUsersFromTexas({
+const users = getUsersFromTexas({
 	firstName: true,
 	lastName: true
 });
