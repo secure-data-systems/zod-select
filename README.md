@@ -5,8 +5,8 @@
 - ✅ Built on Zod v4
 - ✅ No external dependencies (except `zod`)
 - ✅ Fully type-safe field selections
-- ✅ Supports merging multiple selects
-- ✅ Converts Zod Selects into Zod schemas
+- ✅ Supports merging multiple Zod Selects
+- ✅ Generate Zod schemas from Zod Selects
 - ✅ Allows schema refinement and overrides
 
 ---
@@ -120,7 +120,7 @@ const user = find([
 
 ---
 
-## 🛠️ Convert Zod Selects into Zod Schemas
+## 🛠️ Generate Zod Schemas from Zod Selects
 
 Use `refineSchema` to turn a selection into a Zod schema:
 
