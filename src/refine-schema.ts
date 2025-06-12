@@ -70,7 +70,7 @@ export type RefineSchema<
 > = T extends ZodUnion
 	? RefineZodUnion<T>
 	: T extends ZodType<object>
-		? RefineObject<T['_output']>
+		? RefineObject<z.infer<T>>
 		: never;
 
 export type RefineZodUnion<T extends ZodUnion>
