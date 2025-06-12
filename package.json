@@ -1,7 +1,7 @@
 {
 	"name": "@securedatasystems/zod-select",
 	"version": "1.0.0",
-	"description": "SecureDataSystems Zod Select",
+	"description": "Type-safe selection utility built on top of Zod. Allows for strongly typed field selection, schema merging, and runtime refinement for frontend or backend use.",
 	"author": "SecureDataSystems",
 	"license": "MIT",
 	"type": "module",
