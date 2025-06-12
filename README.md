@@ -6,7 +6,7 @@
 - ✅ No external dependencies (except `zod`)
 - ✅ Fully type-safe field selections
 - ✅ Supports merging multiple selects
-- ✅ Converts selects back into Zod schemas
+- ✅ Converts Zod Selects into Zod schemas
 - ✅ Allows schema refinement and overrides
 
 ---
