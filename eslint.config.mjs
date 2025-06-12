@@ -5,7 +5,6 @@ export default [
 	{
 		ignores: [
 			'**/dist/*',
-			'**/build/*',
 			'**/scripts/*',
 			'eslint.config.mjs',
 			'test.ts',
