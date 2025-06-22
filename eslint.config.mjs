@@ -1,4 +1,4 @@
-import securedatasystems from '@securedatasystems/eslint-config';
+import securedatasystems from '@secure-data-systems/eslint-config';
 
 export default [
 	...securedatasystems.configs.flat,
