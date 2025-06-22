@@ -14,9 +14,9 @@
 ## Install
 
 ```bash
-pnpm add zod zod-select
+pnpm add zod zodselect
 # or
-npm install zod zod-select
+npm install zod zodselect
 ```
 
 ---
