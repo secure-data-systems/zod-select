@@ -4,6 +4,10 @@
 	"description": "Type-safe selection utility built on top of Zod. Allows for strongly typed field selection, schema merging, and runtime refinement for frontend or backend use.",
 	"author": "SecureDataSystems",
 	"license": "MIT",
+	"repository": {
+    "type": "git",
+    "url": "git+https://github.com/secure-data-systems/zod-select.git"
+  },
 	"type": "module",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
