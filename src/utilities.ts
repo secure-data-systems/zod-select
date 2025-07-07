@@ -1,20 +1,32 @@
 import { ZodArray, ZodCatch, ZodDefault, ZodLazy, ZodNullable, ZodObject, ZodOptional, ZodType, ZodUnion, ZodUnknown } from 'zod/v4';
 
-export function getInnerType(schema: ZodType): undefined | ZodType {
-	if (schema instanceof ZodOptional || schema instanceof ZodNullable || schema instanceof ZodDefault || schema instanceof ZodCatch) {
-		return schema.def.innerType as ZodType;
-	} else if (schema instanceof ZodLazy) {
-		return schema.def.getter() as ZodType;
-	} else if (schema instanceof ZodArray) {
-		return schema.element as ZodType;
+export function getInnerType(schema: ZodType, unwrapLazy = true): ZodType {
+	if (
+		schema instanceof ZodOptional
+		|| schema instanceof ZodNullable
+		|| schema instanceof ZodDefault
+		|| schema instanceof ZodCatch
+	) {
+		return getInnerType(schema.def.innerType as ZodType, unwrapLazy);
 	}
 
-	// Not a recognized wrapper type
-	return undefined;
+	if (schema instanceof ZodArray) {
+		return getInnerType(schema.def.element as ZodType, unwrapLazy);
+	}
+
+	if (unwrapLazy && schema instanceof ZodLazy) {
+		return getInnerType(schema.def.getter() as ZodType);
+	}
+
+	return schema;
 }
 
 export function isZodArray(obj: unknown): obj is ZodArray<ZodType> {
 	return isZodType(obj) && (obj.def.type === 'array');
+}
+
+export function isZodLazy(obj: unknown): obj is ZodLazy {
+	return isZodType(obj) && (obj.def.type === 'lazy');
 }
 
 export function isZodNullable(obj: unknown): obj is ZodNullable<ZodType> {
@@ -31,6 +43,10 @@ export function isZodObject(obj: unknown, isLoose?: boolean): obj is ZodObject {
 	}
 
 	return isLoose === isZodUnknown((obj as ZodObject).def.catchall);
+}
+
+export function isZodObjectLoose(obj: ZodObject): boolean {
+	return !!isZodUnknown(obj.def.catchall as ZodType);
 }
 
 export function isZodOptional(obj: unknown): obj is ZodOptional<ZodType> {

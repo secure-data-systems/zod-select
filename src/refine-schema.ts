@@ -243,14 +243,14 @@ function refineSchemaField<T extends ZodType, TShape>(fieldSchema: T, fieldShape
 			refineSchemaField(fieldSchema.element, fieldShape)
 		);
 	} else if (isZodOptional(fieldSchema)) {
-		return refineSchemaField(fieldSchema._def.innerType, fieldShape).optional();
+		return refineSchemaField(fieldSchema.def.innerType, fieldShape).optional();
 	} else if (isZodNullable(fieldSchema)) {
-		return refineSchemaField(fieldSchema._def.innerType, fieldShape).nullable();
+		return refineSchemaField(fieldSchema.def.innerType, fieldShape).nullable();
 	} else {
 		const innerType = getInnerType(fieldSchema);
 
 		// There are wrapper types we can't forward because the underlying object structures are changing.
-		if (innerType) {
+		if (innerType !== fieldSchema) {
 			return refineSchemaField(innerType, fieldShape);
 		}
 	}
