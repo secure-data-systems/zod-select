@@ -1,8 +1,8 @@
 import { strict as assert } from 'assert';
 import { describe, it } from 'node:test';
-import { z, ZodObject } from 'zod/v4';
+import { z, ZodBoolean, ZodLazy, ZodObject, ZodOptional, ZodType, ZodUnion } from 'zod/v4';
 
-import { buildSelectSchema } from './build-select-schema.js';
+import { BasicSelect, buildSelectSchema } from './build-select-schema.js';
 import { getInnerType, isZodObjectLoose } from './utilities.js';
 
 describe('.buildSelectSchema()', () => {
@@ -123,5 +123,96 @@ describe('.buildSelectSchema()', () => {
 
 		const select = buildSelectSchema(schema);
 		assert.strictEqual(getInnerType(select.shape.optionalField).def.type, 'boolean');
+	});
+
+	it('should handle direct recursion', () => {
+		interface Role {
+			name: string,
+			roles: Role[]
+		}
+
+		const RoleSchema: ZodType<Role> = z.lazy(() => {
+			return (
+				z.object({
+					name: z.string(),
+					roles: z.array(RoleSchema)
+				})
+			);
+		});
+
+		const select = buildSelectSchema(RoleSchema);
+
+		assert.deepStrictEqual(Object.keys(select.shape), ['name', 'roles']);
+
+		const nameSelect = select.shape.name;
+		assert.strictEqual(nameSelect.def.type, 'optional');
+		assert.strictEqual(nameSelect.def.innerType.def.type, 'boolean');
+
+		const rolesSelect = select.shape.roles;
+		assert.strictEqual(rolesSelect.def.type, 'lazy');
+
+		const innerUnion = rolesSelect.def.getter().def.innerType;
+		assert.strictEqual(innerUnion.def.type, 'union');
+
+		const booleanItem = innerUnion.def.options[0];
+		assert.strictEqual(booleanItem.def.type, 'boolean');
+
+		const roleItem = innerUnion.def.options[1];
+		assert.strictEqual(roleItem.def.type, 'object');
+
+		/*
+		// Confirm recursion points back to same structure
+		const nestedShape = arrayItem.options[1].shape;
+		assert.deepStrictEqual(Object.keys(nestedShape), ['name', 'roles']);
+		*/
+	});
+
+	it('should support mutual recursion (cross-recursive)', () => {
+		interface A { b: B }
+		interface B { a: A }
+
+		const A: z.ZodType<A> = z.lazy(() =>
+			z.object({
+				b: B
+			})
+		);
+
+		const B: z.ZodType<B> = z.lazy(() =>
+			z.object({
+				a: A
+			})
+		);
+
+		const select = buildSelectSchema(A);
+		assert.strictEqual(select.shape.b.def.type, 'lazy');
+
+		const bUnion = select.shape.b.def.getter();
+
+		assert.strictEqual(bUnion.def.innerType.def.type, 'union');
+
+		const bObj = bUnion.def.innerType.def.options[1];
+		assert.strictEqual(bObj.shape.a.def.type, 'lazy');
+	});
+
+	it('should share the same instance in recursion (no infinite loop)', () => {
+		interface Role {
+			name: string,
+			roles: Role[]
+		}
+
+		const Role: ZodType<Role> = z.lazy(() =>
+			z.object({
+				name: z.string(),
+				roles: z.array(Role)
+			})
+		);
+
+		const select = buildSelectSchema(Role);
+		const rolesSelect = select.shape.roles;
+		const unionSelect = (rolesSelect as ZodLazy<ZodOptional<ZodUnion<readonly [ZodBoolean, BasicSelect]>>>).def.getter().def.innerType;
+		const nestedRoleSelect = unionSelect.def.options[1].shape.roles;
+
+		// Should be the same object (by reference)
+		assert.strictEqual(rolesSelect, nestedRoleSelect);
 	});
 });
