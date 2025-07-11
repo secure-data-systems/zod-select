@@ -1,4 +1,4 @@
-import { ZodArray, ZodCatch, ZodDefault, ZodLazy, ZodNullable, ZodObject, ZodOptional, ZodType, ZodUnion, ZodUnknown } from 'zod/v4';
+import { ZodArray, ZodCatch, ZodDefault, ZodLazy, ZodNullable, ZodObject, ZodOptional, ZodType, ZodUnion, ZodUnknown } from 'zod';
 
 export function getInnerType(schema: ZodType, unwrapLazy = true): ZodType {
 	if (

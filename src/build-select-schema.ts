@@ -1,4 +1,4 @@
-import { z, ZodBoolean, ZodIntersection, ZodLazy, ZodObject, ZodOptional, ZodTuple, ZodType, ZodUnion } from 'zod/v4';
+import { z, ZodBoolean, ZodIntersection, ZodLazy, ZodObject, ZodOptional, ZodTuple, ZodType, ZodUnion } from 'zod';
 
 import { ZodSelect } from './select.js';
 import { getInnerType, isZodLazy, isZodObject, isZodObjectLoose } from './utilities.js';

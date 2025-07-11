@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { z, ZodType } from 'zod/v4';
+import { z, ZodType } from 'zod';
 
 import { mergeSelect } from '../src/merge-select.js';
 import { refineSchema } from '../src/refine-schema.js';

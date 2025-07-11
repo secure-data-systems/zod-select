@@ -1,6 +1,6 @@
 import { strict as assert } from 'assert';
 import { describe, it } from 'node:test';
-import { z, ZodBoolean, ZodLazy, ZodObject, ZodOptional, ZodType, ZodUnion } from 'zod/v4';
+import { z, ZodBoolean, ZodLazy, ZodObject, ZodOptional, ZodType, ZodUnion } from 'zod';
 
 import { BasicSelect, buildSelectSchema } from './build-select-schema.js';
 import { getInnerType, isZodObjectLoose } from './utilities.js';

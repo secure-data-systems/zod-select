@@ -1,4 +1,4 @@
-import { ZodType, ZodUnion } from 'zod/v4';
+import { ZodType, ZodUnion } from 'zod';
 
 import { MergeSelect, MultiSelect, ZodSelect } from './select.js';
 

@@ -1,6 +1,6 @@
 import { strict as assert, deepStrictEqual, throws } from 'assert';
 import { describe, it } from 'node:test';
-import { z, ZodError } from 'zod/v4';
+import { z, ZodError } from 'zod';
 
 import { refineSchema } from './refine-schema.js';
 

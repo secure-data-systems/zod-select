@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 import { getInnerType, isZodObject, isZodOptional, isZodUnion, isZodUnknown } from './utilities.js';
 

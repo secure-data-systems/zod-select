@@ -1,4 +1,4 @@
-import { z, ZodTuple, ZodType, ZodUnion } from 'zod/v4';
+import { z, ZodTuple, ZodType, ZodUnion } from 'zod';
 
 import { RefinedTypeSchema, RefinedUnionSchema, RefineObject, RefineZodTuple, RefineZodUnion } from './refine-schema.js';
 import { DeepMergeAll, IsEqual } from './types.js';

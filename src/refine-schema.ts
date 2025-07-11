@@ -1,4 +1,4 @@
-import { core, z, ZodAny, ZodArray, ZodBoolean, ZodDate, ZodLiteral, ZodNever, ZodNullable, ZodNumber, ZodObject, ZodOptional, ZodRawShape, ZodString, ZodTuple, ZodType, ZodUnion, ZodUnknown } from 'zod/v4';
+import { core, z, ZodAny, ZodArray, ZodBoolean, ZodDate, ZodLiteral, ZodNever, ZodNullable, ZodNumber, ZodObject, ZodOptional, ZodRawShape, ZodString, ZodTuple, ZodType, ZodUnion, ZodUnknown } from 'zod';
 
 import { IsAny, IsJsonType, Mutable } from './types.js';
 import { getInnerType, isZodArray, isZodNullable, isZodObject, isZodOptional, isZodType, isZodUnion } from './utilities.js';

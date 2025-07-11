@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 import { InferMergedType, MultiSelect } from '../src/select.js';
 
