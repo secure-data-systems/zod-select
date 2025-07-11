@@ -1,4 +1,4 @@
-import { core, z, ZodAny, ZodArray, ZodBoolean, ZodDate, ZodLiteral, ZodNever, ZodNullable, ZodNumber, ZodObject, ZodOptional, ZodRawShape, ZodString, ZodType, ZodUnion, ZodUnknown } from 'zod/v4';
+import { core, z, ZodAny, ZodArray, ZodBoolean, ZodDate, ZodLiteral, ZodNever, ZodNullable, ZodNumber, ZodObject, ZodOptional, ZodRawShape, ZodString, ZodTuple, ZodType, ZodUnion, ZodUnknown } from 'zod/v4';
 
 import { IsAny, IsJsonType, Mutable } from './types.js';
 import { getInnerType, isZodArray, isZodNullable, isZodObject, isZodOptional, isZodType, isZodUnion } from './utilities.js';
@@ -75,7 +75,8 @@ type ReapplyOptionalNullable<T, U extends z.ZodType>
 
 export type RefinedSchema<
 	T extends ZodType<object> | ZodUnion,
-	TShape extends RefineSchema<T>
+	TShape extends RefineSchema<T, TIsSimple>,
+	TIsSimple extends boolean
 > = T extends ZodUnion ? RefinedUnionSchema<T, TShape>
 	: T extends ZodType<object> ? RefinedTypeSchema<z.infer<T>, TShape>
 		: never;
@@ -129,46 +130,55 @@ export type RefinedUnionSchema<T extends ZodUnion, TShape> = ZodUnion<
 		: never
 >;
 
-type Refinement<T extends ZodType> = ((schema: T) => ZodType) | boolean | ZodType;
+type Refinement<T extends ZodType, TIsSimple extends boolean> =
+	TIsSimple extends true ? boolean
+	: ((schema: T) => ZodType) | boolean | ZodType;
 
 // Recursive type to define shape of fields to pick, redefine, or refine
-export type RefineObject<T extends object> = {
-	[K in keyof T]?: RefineType<T[K]>
+export type RefineObject<T extends object, TIsSimple extends boolean> = {
+	[K in keyof T]?: RefineType<T[K], TIsSimple>
 };
 
 export type RefineSchema<
-	T extends ZodType<object> | ZodUnion
+	T extends ZodType<object> | ZodUnion, TIsSimple extends boolean
 > = T extends ZodUnion
 	? RefineZodUnion<T>
 	: T extends ZodType<object>
-		? RefineObject<z.infer<T>>
+		? RefineObject<z.infer<T>, TIsSimple>
 		: never;
 
-type RefineType<T>
+type RefineType<T, TIsSimple extends boolean>
 	= IsTuple<
 		TuplifyUnion<Exclude<T, null | undefined>>,
 
-		Refinement<Zodify<T>>,
+		Refinement<Zodify<T>, TIsSimple>,
 
-		Exclude<T, null | undefined> extends string ? Refinement<ApplyOptionalNullable<T, ZodString>>
-			: Exclude<T, null | undefined> extends number ? Refinement<ApplyOptionalNullable<T, ZodNumber>>
-				: Exclude<T, null | undefined> extends boolean ? Refinement<ApplyOptionalNullable<T, ZodBoolean>>
-					: Exclude<T, null | undefined> extends Date ? Refinement<ApplyOptionalNullable<T, ZodDate>>
+		Exclude<T, null | undefined> extends string ? Refinement<ApplyOptionalNullable<T, ZodString>, TIsSimple>
+			: Exclude<T, null | undefined> extends number ? Refinement<ApplyOptionalNullable<T, ZodNumber>, TIsSimple>
+				: Exclude<T, null | undefined> extends boolean ? Refinement<ApplyOptionalNullable<T, ZodBoolean>, TIsSimple>
+					: Exclude<T, null | undefined> extends Date ? Refinement<ApplyOptionalNullable<T, ZodDate>, TIsSimple>
 						: Exclude<T, null | undefined> extends Array<infer U>
 							? Exclude<U, null | undefined> extends object
-								? Refinement<Zodify<T>> | RefineObject<Extract<U, object>>
-								: Refinement<Zodify<T>>
+								? Refinement<Zodify<T>, TIsSimple> | RefineObject<Extract<U, object>, TIsSimple>
+								: Refinement<Zodify<T>, TIsSimple>
 							: Exclude<T, null | undefined> extends object
 								? IsJsonType<
 									Exclude<T, null | undefined>,
 									false,
-					Refinement<Zodify<T>> | RefineObject<Extract<T, object>>,
-					Refinement<Zodify<T>>
+					Refinement<Zodify<T>, TIsSimple> | RefineObject<Extract<T, object>, TIsSimple>,
+					Refinement<Zodify<T>, TIsSimple>
 								>
 								: unknown extends Exclude<T, null | undefined>
-									? Refinement<Zodify<T>>
+									? Refinement<Zodify<T>, TIsSimple>
 									: never
 	>;
+
+export type RefineZodTuple<T extends ZodTuple>
+	= {
+		[K in keyof UnionToIntersection<
+			T['def']['items'][number] extends ZodObject<infer Shape extends ZodRawShape> ? Shape : object
+		>]?: boolean;
+	};
 
 export type RefineZodUnion<T extends ZodUnion>
 	= {
@@ -200,11 +210,11 @@ export type Zodify<T, TDepth extends number = 0>
 // Main function to refine the schema
 export function refineSchema<
 	T extends ZodType<object> | ZodUnion,
-	TShape extends RefineSchema<T>
+	TShape extends RefineSchema<T, false>
 >(
 	schema: T,
 	shape: TShape
-): RefinedSchema<T, TShape> {
+): RefinedSchema<T, TShape, false> {
 	if (isZodObject(schema)) {
 		const refinedShape: Mutable<ZodRawShape> = {};
 		const schemaShape = schema.shape;
@@ -215,11 +225,11 @@ export function refineSchema<
 			}
 		}
 
-		return z.object(refinedShape) as RefinedSchema<T, TShape>;
+		return z.object(refinedShape) as RefinedSchema<T, TShape, false>;
 	} else if (isZodUnion(schema)) {
 		const refinedOptions = schema.options.map(option => refineSchemaField(option, shape));
 
-		return z.union(refinedOptions as any) as RefinedSchema<T, TShape>;
+		return z.union(refinedOptions as any) as RefinedSchema<T, TShape, false>;
 	}
 
 	throw new Error('Unsupported schema type for refinement');

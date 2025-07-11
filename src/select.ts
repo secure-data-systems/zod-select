@@ -1,6 +1,6 @@
-import { z, ZodType, ZodUnion } from 'zod/v4';
+import { z, ZodTuple, ZodType, ZodUnion } from 'zod/v4';
 
-import { RefinedTypeSchema, RefinedUnionSchema, RefineObject, RefineZodUnion } from './refine-schema.js';
+import { RefinedTypeSchema, RefinedUnionSchema, RefineObject, RefineZodTuple, RefineZodUnion } from './refine-schema.js';
 import { DeepMergeAll, IsEqual } from './types.js';
 
 export type InferMergedType<
@@ -33,7 +33,7 @@ export type InferType<
 
 				// If U is a refined object shape
 				: T extends ZodType<object>
-					? (U extends RefineObject<z.infer<T>> ? z.infer<RefinedTypeSchema<z.infer<T>, U>> : z.infer<T>)
+					? (U extends RefineObject<z.infer<T>, false> ? z.infer<RefinedTypeSchema<z.infer<T>, U>> : z.infer<T>)
 
 					// Default to inferring from T
 					: z.infer<T>;
@@ -61,9 +61,10 @@ export type MultiSelect<T extends ZodType<object> | ZodUnion>
 	= [ZodSelect<T>, ...ZodSelect<T>[]] | undefined | ZodSelect<T>;
 
 export type ZodSelect<
-	T extends ZodType<object> | ZodUnion
+	T extends ZodTuple | ZodType<object> | ZodUnion, TIsSimple extends boolean = false
 > = (
 	T extends ZodUnion ? (RefineZodUnion<T> | ZodUnion)
-		: T extends ZodType<object> ? (RefineObject<z.infer<T>> | ZodType<object>)
-			: never
+		: T extends ZodTuple ? (RefineZodTuple<T> | ZodTuple)
+			: T extends ZodType<object> ? (RefineObject<z.infer<T>, TIsSimple> | ZodType<object>)
+				: never
 );
