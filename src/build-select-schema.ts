@@ -1,5 +1,6 @@
 import { z, ZodBoolean, ZodIntersection, ZodLazy, ZodObject, ZodOptional, ZodTuple, ZodType, ZodUnion } from 'zod/v4';
 
+import { ZodSelect } from './select.js';
 import { getInnerType, isZodLazy, isZodObject, isZodObjectLoose } from './utilities.js';
 
 export type BasicSelect = ZodObject<
@@ -118,12 +119,12 @@ function buildSelectMerge(types: ZodType[]): Clause {
 	return z.union([z.boolean(), result]).optional();
 }
 
-export function buildSelectSchema(schema: ZodType<object> | ZodUnion): BasicSelect {
+export function buildSelectSchema<T extends ZodType<object> | ZodUnion>(schema: T): ZodType<ZodSelect<T, true>> {
 	const result = buildSelect(schema);
 
 	if (isZodLazy(result)) {
-		return (result.def.getter().def.innerType as ZodUnion).def.options[1] as BasicSelect;
+		return (result.def.getter().def.innerType as ZodUnion).def.options[1] as ZodType<ZodSelect<T, true>>;
 	}
 
-	return (result.def.innerType as ZodUnion).def.options[1] as BasicSelect;
+	return (result.def.innerType as ZodUnion).def.options[1] as ZodType<ZodSelect<T, true>>;
 }

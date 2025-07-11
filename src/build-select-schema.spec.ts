@@ -89,8 +89,8 @@ describe('.buildSelectSchema()', () => {
 
 		const select = buildSelectSchema(schema);
 
-		assert.strictEqual(getInnerType(select.shape.a).def.type, 'boolean');
-		assert.strictEqual(getInnerType(select.shape.b).def.type, 'boolean');
+		assert.strictEqual(getInnerType((select as ZodObject).shape.a).def.type, 'boolean');
+		assert.strictEqual(getInnerType((select as ZodObject).shape.b).def.type, 'boolean');
 	});
 
 	it('should support tuples of objects', () => {
@@ -101,8 +101,8 @@ describe('.buildSelectSchema()', () => {
 
 		const select = buildSelectSchema(schema);
 
-		assert.strictEqual(getInnerType(select.shape.foo).def.type, 'boolean');
-		assert.strictEqual(getInnerType(select.shape.bar).def.type, 'boolean');
+		assert.strictEqual(getInnerType((select as ZodObject).shape.foo).def.type, 'boolean');
+		assert.strictEqual(getInnerType((select as ZodObject).shape.bar).def.type, 'boolean');
 	});
 
 	it('should return a strict schema if all members are strict', () => {
@@ -113,7 +113,7 @@ describe('.buildSelectSchema()', () => {
 
 		const select = buildSelectSchema(schema);
 
-		assert.strictEqual(isZodObjectLoose(select), false);
+		assert.strictEqual(isZodObjectLoose((select as ZodObject)), false);
 	});
 
 	it('should allow optional keys in the select schema', () => {
@@ -122,7 +122,7 @@ describe('.buildSelectSchema()', () => {
 		});
 
 		const select = buildSelectSchema(schema);
-		assert.strictEqual(getInnerType(select.shape.optionalField).def.type, 'boolean');
+		assert.strictEqual(getInnerType((select as ZodObject).shape.optionalField).def.type, 'boolean');
 	});
 
 	it('should handle direct recursion', () => {
@@ -142,13 +142,13 @@ describe('.buildSelectSchema()', () => {
 
 		const select = buildSelectSchema(RoleSchema);
 
-		assert.deepStrictEqual(Object.keys(select.shape), ['name', 'roles']);
+		assert.deepStrictEqual(Object.keys((select as ZodObject).shape), ['name', 'roles']);
 
-		const nameSelect = select.shape.name;
+		const nameSelect = (select as ZodObject).shape.name;
 		assert.strictEqual(nameSelect.def.type, 'optional');
 		assert.strictEqual(nameSelect.def.innerType.def.type, 'boolean');
 
-		const rolesSelect = select.shape.roles;
+		const rolesSelect = (select as ZodObject).shape.roles;
 		assert.strictEqual(rolesSelect.def.type, 'lazy');
 
 		const innerUnion = rolesSelect.def.getter().def.innerType;
@@ -159,12 +159,6 @@ describe('.buildSelectSchema()', () => {
 
 		const roleItem = innerUnion.def.options[1];
 		assert.strictEqual(roleItem.def.type, 'object');
-
-		/*
-		// Confirm recursion points back to same structure
-		const nestedShape = arrayItem.options[1].shape;
-		assert.deepStrictEqual(Object.keys(nestedShape), ['name', 'roles']);
-		*/
 	});
 
 	it('should support mutual recursion (cross-recursive)', () => {
@@ -184,9 +178,9 @@ describe('.buildSelectSchema()', () => {
 		);
 
 		const select = buildSelectSchema(A);
-		assert.strictEqual(select.shape.b.def.type, 'lazy');
+		assert.strictEqual((select as any as ZodObject).shape.b.def.type, 'lazy');
 
-		const bUnion = select.shape.b.def.getter();
+		const bUnion = (select as any as ZodObject).shape.b.def.getter();
 
 		assert.strictEqual(bUnion.def.innerType.def.type, 'union');
 
@@ -208,7 +202,7 @@ describe('.buildSelectSchema()', () => {
 		);
 
 		const select = buildSelectSchema(Role);
-		const rolesSelect = select.shape.roles;
+		const rolesSelect = (select as ZodObject).shape.roles;
 		const unionSelect = (rolesSelect as ZodLazy<ZodOptional<ZodUnion<readonly [ZodBoolean, BasicSelect]>>>).def.getter().def.innerType;
 		const nestedRoleSelect = unionSelect.def.options[1].shape.roles;
 
