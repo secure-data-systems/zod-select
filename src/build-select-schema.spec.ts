@@ -204,9 +204,61 @@ describe('.buildSelectSchema()', () => {
 		const select = buildSelectSchema(Role);
 		const rolesSelect = (select as ZodObject).shape.roles;
 		const unionSelect = (rolesSelect as ZodLazy<ZodOptional<ZodUnion<readonly [ZodBoolean, BasicSelect]>>>).def.getter().def.innerType;
-		const nestedRoleSelect = unionSelect.def.options[1].shape.roles;
+		const nestedRoleSelect = (unionSelect.def.options[1] as ZodObject).shape.roles;
 
 		// Should be the same object (by reference)
 		assert.strictEqual(rolesSelect, nestedRoleSelect);
+	});
+
+	it('should support record types', () => {
+		const schema = z.object({
+			tags: z.record(z.string(), z.string())
+		});
+
+		const select = buildSelectSchema(schema);
+
+		const tagsSelect = (select as ZodObject).shape.tags as
+			z.ZodOptional<z.ZodUnion<[z.ZodBoolean, z.ZodRecord<z.ZodString, z.ZodOptional<z.ZodBoolean>>]>>;
+
+		assert.strictEqual(tagsSelect.type, 'optional');
+
+		const union = tagsSelect.def.innerType;
+
+		assert.strictEqual(union.type, 'union');
+		assert.strictEqual(union.def.options[0].type, 'boolean');
+		assert.strictEqual(union.def.options[1].type, 'record');
+		assert.strictEqual(union.def.options[1].def.keyType.type, 'string');
+		assert.strictEqual(union.def.options[1].def.valueType.type, 'optional');
+		assert.strictEqual(union.def.options[1].def.valueType.def.innerType.type, 'boolean');
+	});
+
+	it('should support unknown types', () => {
+		const schema = z.object({
+			tags: z.unknown()
+		});
+
+		const select = buildSelectSchema(schema);
+
+		const result = select.safeParse({
+			tags: {
+				any: {
+					damn: true
+				},
+				thing: true
+			}
+		});
+
+		assert.strictEqual(result.success, true);
+		assert.deepStrictEqual(
+			result.data,
+			{
+				tags: {
+					any: {
+						damn: true
+					},
+					thing: true
+				}
+			}
+		);
 	});
 });

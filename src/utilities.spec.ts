@@ -2,7 +2,7 @@ import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import { z } from 'zod';
 
-import { getInnerType, isZodObject, isZodOptional, isZodUnion, isZodUnknown } from './utilities.js';
+import { getInnerType, isZodObject, isZodOptional, isZodRecord, isZodUnion, isZodUnknown } from './utilities.js';
 
 describe('.utilities()', () => {
 	describe('.getInnerType()', () => {
@@ -65,6 +65,39 @@ describe('.utilities()', () => {
 		const stringSchema = z.string();
 		assert.ok(isZodOptional(optionalSchema));
 		assert.ok(!isZodOptional(stringSchema));
+	});
+
+	it('isZodRecord detects complex record schemas with optional fields', () => {
+		// Create a sample RecordAttachmentSchema
+		const RecordAttachmentSchema = z.object({
+			name: z.string(),
+			size: z.number(),
+			type: z.string()
+		});
+
+		// Create a record schema with optional field
+		const attachmentsSchema = z.record(z.string(), RecordAttachmentSchema).optional();
+		const nonRecordSchema = z.object({ field: z.string() });
+
+		// Test record detection
+		assert.ok(isZodRecord(z.record(z.string(), RecordAttachmentSchema)), 'Should detect record schema');
+		assert.ok(isZodRecord(attachmentsSchema.unwrap()), 'Should detect optional record schema when unwrapped');
+		assert.ok(!isZodRecord(nonRecordSchema), 'Should not detect object schema as record');
+
+		// Test with actual record data
+		const validRecord = z.record(z.string(), RecordAttachmentSchema).parse({
+			'file1': { name: 'test.pdf', size: 1024, type: 'application/pdf' },
+			'file2': { name: 'image.jpg', size: 2048, type: 'image/jpeg' }
+		});
+
+		assert.ok(validRecord, 'Should successfully parse valid record data');
+	});
+
+	it('isZodRecord detects ZodRecord', () => {
+		const recordSchema = z.record(z.string(), z.string());
+		const stringSchema = z.string();
+		assert.ok(isZodRecord(recordSchema));
+		assert.ok(!isZodRecord(stringSchema));
 	});
 
 	it('isZodUnion detects ZodUnion', () => {

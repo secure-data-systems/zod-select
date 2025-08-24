@@ -1,4 +1,4 @@
-import { ZodArray, ZodCatch, ZodDefault, ZodLazy, ZodNullable, ZodObject, ZodOptional, ZodType, ZodUnion, ZodUnknown } from 'zod';
+import { ZodArray, ZodCatch, ZodDefault, ZodLazy, ZodNullable, ZodObject, ZodOptional, ZodRecord, ZodType, ZodUnion, ZodUnknown } from 'zod';
 
 export function getInnerType(schema: ZodType, unwrapLazy = true): ZodType {
 	if (
@@ -51,6 +51,10 @@ export function isZodObjectLoose(obj: ZodObject): boolean {
 
 export function isZodOptional(obj: unknown): obj is ZodOptional<ZodType> {
 	return isZodType(obj) && (obj.def.type === 'optional');
+}
+
+export function isZodRecord(obj: unknown): obj is ZodRecord {
+	return isZodType(obj) && (obj.def.type === 'record');
 }
 
 export function isZodType(obj: unknown): obj is ZodType {

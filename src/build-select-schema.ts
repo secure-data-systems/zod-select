@@ -1,15 +1,18 @@
-import { z, ZodBoolean, ZodIntersection, ZodLazy, ZodObject, ZodOptional, ZodTuple, ZodType, ZodUnion } from 'zod';
+import { z, ZodBoolean, ZodIntersection, ZodLazy, ZodObject, ZodOptional, ZodRecord, ZodTuple, ZodType, ZodUnion } from 'zod';
+import { $ZodRecordKey } from 'zod/v4/core';
 
 import { ZodSelect } from './select.js';
-import { getInnerType, isZodLazy, isZodObject, isZodObjectLoose } from './utilities.js';
+import { getInnerType, isZodLazy, isZodObject, isZodObjectLoose, isZodRecord } from './utilities.js';
 
-export type BasicSelect = ZodObject<
-	Readonly<{
-		[k: string]:
-			| Clause
-			| ZodLazy<Clause>
-	}>
->;
+export type BasicSelect =
+	ZodObject<
+		Readonly<{
+			[k: string]: Clause | ZodLazy<Clause>
+		}>
+	> |
+	ZodRecord<
+		$ZodRecordKey, Clause | ZodLazy<Clause>
+	>;
 
 type Clause = ZodOptional<ZodBoolean> | ZodOptional<ZodUnion<readonly [ZodBoolean, BasicSelect]>>;
 
@@ -51,6 +54,36 @@ function buildSelect(
 
 		cache.set(schema, result);
 
+		return result;
+	}
+
+	if (isZodRecord(schema)) {
+		const valueType = schema.def.valueType as ZodType;
+		const select = buildSelect(valueType, cache);
+
+		// A record select means: either a boolean, or a record of the same key type with select-values
+		const result = z.union([
+			z.boolean(),
+			z.record(schema.def.keyType, select)
+		]).optional();
+
+		cache.set(schema, result);
+
+		return result;
+	}
+
+	if (schema.def.type === 'unknown') {
+		const result = z
+			.union([
+				z.boolean(),
+				z.record(
+					z.string(),
+					z.lazy(() => buildSelect(schema, cache) as Clause)
+				)
+			])
+			.optional();
+
+		cache.set(schema, result);
 		return result;
 	}
 
