@@ -151,7 +151,7 @@ type RefineType<T, TIsSimple extends boolean>
 	= IsTuple<
 		TuplifyUnion<Exclude<T, null | undefined>>,
 
-		Refinement<Zodify<T>, TIsSimple>,
+		Refinement<Zodify<T>, TIsSimple> | RefineZodUnion<Extract<T, ZodUnion>>,
 
 		Exclude<T, null | undefined> extends string ? Refinement<ApplyOptionalNullable<T, ZodString>, TIsSimple>
 			: Exclude<T, null | undefined> extends number ? Refinement<ApplyOptionalNullable<T, ZodNumber>, TIsSimple>
@@ -165,8 +165,8 @@ type RefineType<T, TIsSimple extends boolean>
 								? IsJsonType<
 									Exclude<T, null | undefined>,
 									false,
-					Refinement<Zodify<T>, TIsSimple> | RefineObject<Extract<T, object>, TIsSimple>,
-					Refinement<Zodify<T>, TIsSimple>
+									Refinement<Zodify<T>, TIsSimple> | RefineObject<Extract<T, object>, TIsSimple>,
+									Refinement<Zodify<T>, TIsSimple>
 								>
 								: unknown extends Exclude<T, null | undefined>
 									? Refinement<Zodify<T>, TIsSimple>
