@@ -252,7 +252,7 @@ describe('.refineSchema()', () => {
 				lastName: 'Springer'
 			});
 		}, (err) => {
-			if (!(err instanceof ZodError) || err.issues[0].code !== 'invalid_union') {
+			if (!(err instanceof ZodError) || err.issues[0]!.code !== 'invalid_union') {
 				return false;
 			}
 
