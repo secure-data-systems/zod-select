@@ -38,8 +38,8 @@ describe('.utilities()', () => {
 		});
 
 		it('should unwrap lazy inside nested wrappers', () => {
-			const LazySchema = z.lazy(() => z.string());
-			const wrapped = LazySchema.optional().nullable().default('abc');
+			const lazySchema = z.lazy(() => z.string());
+			const wrapped = lazySchema.optional().nullable().default('abc');
 			const inner = getInnerType(wrapped);
 
 			assert.strictEqual(inner.def.type, 'string');
@@ -69,23 +69,23 @@ describe('.utilities()', () => {
 
 	it('isZodRecord detects complex record schemas with optional fields', () => {
 		// Create a sample RecordAttachmentSchema
-		const RecordAttachmentSchema = z.object({
+		const recordAttachmentSchema = z.object({
 			name: z.string(),
 			size: z.number(),
 			type: z.string()
 		});
 
 		// Create a record schema with optional field
-		const attachmentsSchema = z.record(z.string(), RecordAttachmentSchema).optional();
+		const attachmentsSchema = z.record(z.string(), recordAttachmentSchema).optional();
 		const nonRecordSchema = z.object({ field: z.string() });
 
 		// Test record detection
-		assert.ok(isZodRecord(z.record(z.string(), RecordAttachmentSchema)), 'Should detect record schema');
+		assert.ok(isZodRecord(z.record(z.string(), recordAttachmentSchema)), 'Should detect record schema');
 		assert.ok(isZodRecord(attachmentsSchema.unwrap()), 'Should detect optional record schema when unwrapped');
 		assert.ok(!isZodRecord(nonRecordSchema), 'Should not detect object schema as record');
 
 		// Test with actual record data
-		const validRecord = z.record(z.string(), RecordAttachmentSchema).parse({
+		const validRecord = z.record(z.string(), recordAttachmentSchema).parse({
 			'file1': { name: 'test.pdf', size: 1024, type: 'application/pdf' },
 			'file2': { name: 'image.jpg', size: 2048, type: 'image/jpeg' }
 		});

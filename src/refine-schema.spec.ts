@@ -6,18 +6,18 @@ import { refineSchema } from './refine-schema.js';
 
 describe('.refineSchema()', () => {
 	it('should retain required fields', () => {
-		const UserSchema = z.object({
+		const userSchema = z.object({
 			age: z.number().optional(),
 			firstName: z.string(),
 			lastName: z.string()
 		});
 
-		const RefinedSchema = refineSchema(UserSchema, {
+		const refinedSchema = refineSchema(userSchema, {
 			firstName: true,
 			lastName: true
 		});
 
-		const parsedData = RefinedSchema.parse({
+		const parsedData = refinedSchema.parse({
 			firstName: 'John',
 			lastName: 'Doe'
 		});
@@ -27,38 +27,38 @@ describe('.refineSchema()', () => {
 	});
 
 	it('should handle optional fields', () => {
-		const UserSchema = z.object({
+		const userSchema = z.object({
 			age: z.number().optional(),
 			firstName: z.string(),
 			lastName: z.string()
 		});
 
-		const RefinedSchema = refineSchema(UserSchema, {
+		const refinedSchema = refineSchema(userSchema, {
 			age: true
 		});
 
-		const parsedData = RefinedSchema.parse({ age: 25 });
+		const parsedData = refinedSchema.parse({ age: 25 });
 		assert.equal(parsedData.age, 25);
 
-		const parsedWithoutAge = RefinedSchema.parse({});
+		const parsedWithoutAge = refinedSchema.parse({});
 		assert.equal(parsedWithoutAge.age, undefined);
 	});
 
 	it('should handle nullable fields', () => {
-		const RoleSchema = z.object({
+		const roleSchema = z.object({
 			name: z.string()
 		});
 
-		const UserSchema = z.object({
+		const userSchema = z.object({
 			firstName: z.string(),
-			role: RoleSchema.nullable()
+			role: roleSchema.nullable()
 		});
 
-		const RefinedSchema = refineSchema(UserSchema, {
+		const refinedSchema = refineSchema(userSchema, {
 			role: true
 		});
 
-		const parsedWithNullRole = RefinedSchema.parse({
+		const parsedWithNullRole = refinedSchema.parse({
 			firstName: 'Alice',
 			role: null
 		});
@@ -67,52 +67,52 @@ describe('.refineSchema()', () => {
 	});
 
 	it('should handle both optional and nullable fields', () => {
-		const RoleSchema = z.object({
+		const roleSchema = z.object({
 			name: z.string()
 		});
 
-		const UserSchema = z.object({
+		const userSchema = z.object({
 			firstName: z.string(),
-			role: RoleSchema.nullable().optional()
+			role: roleSchema.nullable().optional()
 		});
 
-		const RefinedSchema = refineSchema(UserSchema, {
+		const refinedSchema = refineSchema(userSchema, {
 			role: {
 				name: true
 			}
 		});
 
-		const parsedWithRole = RefinedSchema.parse({
+		const parsedWithRole = refinedSchema.parse({
 			firstName: 'Alice',
 			role: { name: 'Admin' }
 		});
 		assert.deepStrictEqual(parsedWithRole.role, { name: 'Admin' });
 
-		const parsedWithNullRole = RefinedSchema.parse({
+		const parsedWithNullRole = refinedSchema.parse({
 			firstName: 'Alice',
 			role: null
 		});
 		assert.strictEqual(parsedWithNullRole.role, null);
 
-		const parsedWithoutRole = RefinedSchema.parse({ firstName: 'Alice' });
+		const parsedWithoutRole = refinedSchema.parse({ firstName: 'Alice' });
 		assert.strictEqual(parsedWithoutRole.role, undefined);
 	});
 
 	it('should apply custom schema transformations', () => {
-		const RoleSchema = z.object({
+		const roleSchema = z.object({
 			name: z.string()
 		});
 
-		const UserSchema = z.object({
+		const userSchema = z.object({
 			firstName: z.string(),
-			role: RoleSchema
+			role: roleSchema
 		});
 
-		const RefinedSchema = refineSchema(UserSchema, {
-			role: (schema: typeof RoleSchema) => schema.extend({ permissions: z.array(z.string()) })
+		const refinedSchema = refineSchema(userSchema, {
+			role: schema => (schema as typeof roleSchema).extend({ permissions: z.array(z.string()) })
 		});
 
-		const parsedData = RefinedSchema.parse({
+		const parsedData = refinedSchema.parse({
 			firstName: 'Bob',
 			role: { name: 'User', permissions: ['read', 'write'] }
 		});
@@ -124,27 +124,27 @@ describe('.refineSchema()', () => {
 	});
 
 	it('should handle nested arrays', () => {
-		const RoleSchema = z.object({
+		const roleSchema = z.object({
 			level: z.number(),
 			title: z.string()
 		});
 
-		const UserSchema = z.object({
+		const userSchema = z.object({
 			age: z.number().optional(),
 			firstName: z.string(),
 			lastName: z.string(),
 			nestedArray: z.array(z.object({ name: z.string(), value: z.number() })).optional().nullable(),
-			role: RoleSchema.nullable().optional(),
+			role: roleSchema.nullable().optional(),
 			tags: z.array(z.string()).optional()
 		});
 
-		const RefinedSchema = refineSchema(UserSchema, {
+		const refinedSchema = refineSchema(userSchema, {
 			nestedArray: {
 				name: true
 			}
 		});
 
-		const parsedData = RefinedSchema.parse({
+		const parsedData = refinedSchema.parse({
 			firstName: 'Alice',
 			lastName: 'Smith',
 			nestedArray: [{ name: 'Feature1', value: 10 }, { name: 'Feature2', value: 20 }]
@@ -153,7 +153,7 @@ describe('.refineSchema()', () => {
 		assert.deepStrictEqual(parsedData.nestedArray, [{ name: 'Feature1' }, { name: 'Feature2' }]);
 
 		// Test optional array
-		const parsedWithoutNestedArray = RefinedSchema.parse({
+		const parsedWithoutNestedArray = refinedSchema.parse({
 			firstName: 'Alice',
 			lastName: 'Smith'
 		});
@@ -167,17 +167,17 @@ describe('.refineSchema()', () => {
 			street: string
 		}
 
-		const UserSchema = z.object({
+		const userSchema = z.object({
 			address: z.custom<Address>().optional(),
 			firstName: z.string(),
 			lastName: z.string()
 		});
 
-		const RefinedSchema = refineSchema(UserSchema, {
+		const refinedSchema = refineSchema(userSchema, {
 			address: true
 		});
 
-		const parsedData = RefinedSchema.parse({
+		const parsedData = refinedSchema.parse({
 			address: {
 				city: 'Austin',
 				state: 'TX',
@@ -200,22 +200,22 @@ describe('.refineSchema()', () => {
 	});
 
 	it('should support unions of objects', () => {
-		const Person = z.object({
+		const person = z.object({
 			firstName: z.string(),
 			lastName: z.string()
 		});
 
-		const Address = z.object({
+		const address = z.object({
 			address: z.string(),
 			city: z.string()
 		});
 
-		const Schema = refineSchema(z.union([Person, Address]), {
+		const schema = refineSchema(z.union([person, address]), {
 			address: true,
 			firstName: true
 		});
 
-		let parseResult = Schema.parse({
+		let parseResult = schema.parse({
 			address: '123 Main Street',
 			firstName: 'Jerry',
 			lastName: 'Springer'
@@ -223,7 +223,7 @@ describe('.refineSchema()', () => {
 
 		deepStrictEqual(parseResult, { firstName: 'Jerry' });
 
-		parseResult = Schema.parse({
+		parseResult = schema.parse({
 			address: '123 Main Street',
 			city: 'Austin'
 		});
@@ -232,23 +232,23 @@ describe('.refineSchema()', () => {
 	});
 
 	it('should error if none of the types are matched', () => {
-		const Person = z.object({
+		const person = z.object({
 			firstName: z.string(),
 			lastName: z.string()
 		});
 
-		const Address = z.object({
+		const address = z.object({
 			address: z.string(),
 			city: z.string()
 		});
 
-		const Schema = refineSchema(z.union([Person, Address]), {
+		const schema = refineSchema(z.union([person, address]), {
 			address: true,
 			firstName: true
 		});
 
 		throws(() => {
-			Schema.parse({
+			schema.parse({
 				lastName: 'Springer'
 			});
 		}, (err) => {
@@ -261,24 +261,24 @@ describe('.refineSchema()', () => {
 	});
 
 	it('should support unions of objects and simple types', () => {
-		const Person = z.object({
+		const person = z.object({
 			firstName: z.string(),
 			lastName: z.string()
 		});
 
-		const Schema = refineSchema(z.union([Person, z.string()]), {
+		const schema = refineSchema(z.union([person, z.string()]), {
 			address: true,
 			firstName: true
 		});
 
-		let parseResult = Schema.parse({
+		let parseResult = schema.parse({
 			firstName: 'Jerry',
 			lastName: 'Springer'
 		});
 
 		deepStrictEqual(parseResult, { firstName: 'Jerry' });
 
-		parseResult = Schema.parse('123 Main Street');
+		parseResult = schema.parse('123 Main Street');
 
 		deepStrictEqual(parseResult, '123 Main Street');
 	});

@@ -22,12 +22,12 @@ export type DeepMergeAll<T> = T extends readonly any[]
 
 export type IsAny<T, TTrue = true, TFalse = false> = 0 extends (1 & T) ? TTrue : TFalse;
 
-export type IsEqual<T, U, TTrue = true, TFalse = false>
-  = (<V>() => V extends T ? 1 : 2) extends
-  (<V>() => V extends U ? 1 : 2) ? TTrue : TFalse;
+export type IsEqual<T, U, TTrue = true, TFalse = false> =
+	(<V>() => V extends T ? 1 : 2) extends
+	(<V>() => V extends U ? 1 : 2) ? TTrue : TFalse;
 
-export type IsJsonType<T, TDeep extends boolean = true, TTrue = true, TFalse = false>
-	= T extends JsonType
+export type IsJsonType<T, TDeep extends boolean = true, TTrue = true, TFalse = false> =
+	T extends JsonType
 		? TTrue
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 		: T extends Function

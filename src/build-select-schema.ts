@@ -9,8 +9,8 @@ export type BasicSelect =
 		Readonly<{
 			[k: string]: Clause | ZodLazy<Clause>
 		}>
-	> |
-	ZodRecord<
+	>
+	| ZodRecord<
 		$ZodRecordKey, Clause | ZodLazy<Clause>
 	>;
 

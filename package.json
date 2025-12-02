@@ -26,20 +26,20 @@
 	},
 	"scripts": {
 		"build": "node scripts/build.mjs && tsc --project tsconfig.build.json",
+		"clean": "node scripts/clean.mjs",
 		"deploy": "npm run build && node ./scripts/publish.mjs",
 		"lint": "eslint . --c eslint.config.mjs",
 		"lint:fix": "eslint . --c eslint.config.mjs --fix",
-    "test": "glob -c \"tsx --tsconfig ./tsconfig.build.json --test\" \"./src/**/*.{spec,test}.ts\""
+		"test": "tsx --tsconfig ./tsconfig.build.json --test ./src/**/*.{spec,test}.ts ./test/**/*.{spec,test}.ts"
 	},
 	"devDependencies": {
-		"@secure-data-systems/eslint-config": "^1.0.26",
-		"@secure-data-systems/tsconfig": "^1.0.2",
+		"@secure-data-systems/eslint-config": "^1.0.33",
+		"@secure-data-systems/tsconfig": "^1.0.3",
 		"@types/node": "^24.10.1",
-		"glob": "^11.0.3",
-		"tsx": "^4.20.6",
+		"tsx": "^4.21.0",
 		"typescript": "^5.9.3"
 	},
 	"dependencies": {
-		"zod": "^4.1.12"
+		"zod": "^4.1.13"
 	}
 }

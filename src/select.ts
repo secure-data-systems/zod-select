@@ -20,9 +20,9 @@ type InferTuple<
 export type InferType<
 	T extends ZodType<object> | ZodUnion,
 	U extends ZodSelect<T>
->
+> =
 	// If U is a ZodObject, infer directly from U
-	= U extends ZodType<object> ? z.infer<U>
+	U extends ZodType<object> ? z.infer<U>
 
 		// If U is a ZodUnion, infer directly from U
 		: U extends ZodUnion ? z.infer<U>
@@ -42,8 +42,8 @@ export type MergeSelect<
 	T extends ZodType<object> | ZodUnion,
 	TSelect1 extends ZodSelect<T>,
 	TSelect2 extends MultiSelect<T>
->
-	= TSelect2 extends undefined
+> =
+	TSelect2 extends undefined
 		// [defined, undefined]
 		? [TSelect1, T]
 		: IsEqual<
@@ -57,8 +57,8 @@ export type MergeSelect<
 				: [TSelect1, TSelect2]
 		>;
 
-export type MultiSelect<T extends ZodType<object> | ZodUnion>
-	= [ZodSelect<T>, ...ZodSelect<T>[]] | undefined | ZodSelect<T>;
+export type MultiSelect<T extends ZodType<object> | ZodUnion> =
+	[ZodSelect<T>, ...ZodSelect<T>[]] | undefined | ZodSelect<T>;
 
 export type ZodSelect<
 	T extends ZodTuple | ZodType<object> | ZodUnion, TIsSimple extends boolean = false
