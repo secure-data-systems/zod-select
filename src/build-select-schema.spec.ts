@@ -131,16 +131,16 @@ describe('.buildSelectSchema()', () => {
 			roles: Role[]
 		}
 
-		const RoleSchema: ZodType<Role> = z.lazy(() => {
+		const roleSchema: ZodType<Role> = z.lazy(() => {
 			return (
 				z.object({
 					name: z.string(),
-					roles: z.array(RoleSchema)
+					roles: z.array(roleSchema)
 				})
 			);
 		});
 
-		const select = buildSelectSchema(RoleSchema);
+		const select = buildSelectSchema(roleSchema);
 
 		assert.deepStrictEqual(Object.keys((select as ZodObject).shape), ['name', 'roles']);
 
@@ -165,19 +165,19 @@ describe('.buildSelectSchema()', () => {
 		interface A { b: B }
 		interface B { a: A }
 
-		const A: z.ZodType<A> = z.lazy(() =>
+		const schemaA: z.ZodType<A> = z.lazy(() =>
 			z.object({
-				b: B
+				b: schemaB
 			})
 		);
 
-		const B: z.ZodType<B> = z.lazy(() =>
+		const schemaB: z.ZodType<B> = z.lazy(() =>
 			z.object({
-				a: A
+				a: schemaA
 			})
 		);
 
-		const select = buildSelectSchema(A);
+		const select = buildSelectSchema(schemaA);
 		assert.strictEqual((select as any as ZodObject).shape.b.def.type, 'lazy');
 
 		const bUnion = (select as any as ZodObject).shape.b.def.getter();
@@ -194,14 +194,14 @@ describe('.buildSelectSchema()', () => {
 			roles: Role[]
 		}
 
-		const Role: ZodType<Role> = z.lazy(() =>
+		const role: ZodType<Role> = z.lazy(() =>
 			z.object({
 				name: z.string(),
-				roles: z.array(Role)
+				roles: z.array(role)
 			})
 		);
 
-		const select = buildSelectSchema(Role);
+		const select = buildSelectSchema(role);
 		const rolesSelect = (select as ZodObject).shape.roles;
 		const unionSelect = (rolesSelect as ZodLazy<ZodOptional<ZodUnion<readonly [ZodBoolean, BasicSelect]>>>).def.getter().def.innerType;
 		const nestedRoleSelect = (unionSelect.def.options[1] as ZodObject).shape.roles;
