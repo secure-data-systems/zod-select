@@ -109,7 +109,7 @@ describe('.refineSchema()', () => {
 		});
 
 		const refinedSchema = refineSchema(userSchema, {
-			role: (schema: typeof roleSchema) => schema.extend({ permissions: z.array(z.string()) })
+			role: schema => (schema as typeof roleSchema).extend({ permissions: z.array(z.string()) })
 		});
 
 		const parsedData = refinedSchema.parse({
