@@ -220,7 +220,7 @@ export function refineSchema<
 		const schemaShape = schema.shape;
 
 		for (const key in shape) {
-			if (key in schemaShape) {
+			if (key in schemaShape && shape[key] !== false) {
 				refinedShape[key] = refineSchemaField(schemaShape[key], shape[key]);
 			}
 		}
