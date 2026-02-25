@@ -260,6 +260,23 @@ describe('.refineSchema()', () => {
 		});
 	});
 
+	it('should exclude fields specified as false in the shape', () => {
+		const schema = z.object({
+			firstName: z.string(),
+			lastName: z.string()
+		});
+
+		const refined = refineSchema(schema, {
+			firstName: true,
+			lastName: false
+		});
+
+		// lastName was specified as false — it should be excluded from the refined schema
+		const result = refined.parse({ firstName: 'Alice', lastName: 'Smith' });
+
+		assert.deepStrictEqual(result, { firstName: 'Alice' });
+	});
+
 	it('should support unions of objects and simple types', () => {
 		const person = z.object({
 			firstName: z.string(),
