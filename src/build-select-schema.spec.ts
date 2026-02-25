@@ -232,6 +232,27 @@ describe('.buildSelectSchema()', () => {
 		assert.strictEqual(union.def.options[1].def.valueType.def.innerType.type, 'boolean');
 	});
 
+	it('should share the same lazy instance for a recursive schema referenced by multiple union members', () => {
+		interface Nested { children: Nested[] }
+		const nested: ZodType<Nested> = z.lazy(() =>
+			z.object({ children: z.array(nested) })
+		);
+
+		const schema = z.union([
+			z.object({ a: nested }),
+			z.object({ b: nested })
+		]);
+
+		const select = buildSelectSchema(schema);
+
+		// Both 'a' and 'b' reference the same `nested` schema.
+		// Their select schemas must be the same lazy instance (shared cache).
+		const aSelect = (select as ZodObject).shape.a;
+		const bSelect = (select as ZodObject).shape.b;
+
+		assert.strictEqual(aSelect, bSelect);
+	});
+
 	it('should support unknown types', () => {
 		const schema = z.object({
 			tags: z.unknown()
