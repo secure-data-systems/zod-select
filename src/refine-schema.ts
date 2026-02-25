@@ -191,7 +191,7 @@ export type RefineZodUnion<T extends ZodUnion> =
 // not handle null and undefined types. They must be stripped out before using this type.
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export type TuplifyUnion<T, TDepth extends number = 0, L = LastOf<T>, N = [T] extends [never] ? true : false> =
-	TDepth extends 9 ? [] // Stop recursion at depth 3 for debugging
+	TDepth extends 9 ? [] // Stop recursion at depth 9
 		: true extends N ? []
 			: Push<TuplifyUnion<Exclude<T, L>, NextDepth<TDepth>>, InternalZodify<L>>;
 

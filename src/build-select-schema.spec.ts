@@ -105,7 +105,7 @@ describe('.buildSelectSchema()', () => {
 		assert.strictEqual(getInnerType((select as ZodObject).shape.bar).def.type, 'boolean');
 	});
 
-	it('should return a strict schema if all members are strict', () => {
+	it('should return a strict schema if any member is strict', () => {
 		const schema = z.union([
 			z.object({ strictA: z.string() }).strict(),
 			z.object({ strictB: z.number() }).strict()
@@ -113,6 +113,19 @@ describe('.buildSelectSchema()', () => {
 
 		const select = buildSelectSchema(schema);
 
+		assert.strictEqual(isZodObjectLoose((select as ZodObject)), false);
+	});
+
+	it('should return a strict schema when only one union member is strict', () => {
+		const schema = z.union([
+			z.object({ strictA: z.string() }).strict(),
+			z.looseObject({ looseB: z.number() })
+		]);
+
+		const select = buildSelectSchema(schema);
+
+		// Any strict member makes the merged select strict so callers cannot
+		// accidentally reference fields outside any member's defined shape.
 		assert.strictEqual(isZodObjectLoose((select as ZodObject)), false);
 	});
 
