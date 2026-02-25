@@ -106,22 +106,22 @@ function buildSelect(
 
 		if (hasLazy) {
 			return z.lazy(() => {
-				return buildSelectMerge(types);
+				return buildSelectMerge(types, cache);
 			});
 		}
 
-		return buildSelectMerge(types);
+		return buildSelectMerge(types, cache);
 	}
 
 	return z.boolean().optional();
 }
 
-function buildSelectMerge(types: ZodType[]): Clause {
+function buildSelectMerge(types: ZodType[], cache: Map<ZodType, Clause | ZodLazy<Clause>>): Clause {
 	const shape: Record<string, Clause | ZodLazy<Clause>> = {};
 	let isStrict = false;
 
 	for (const cur of types) {
-		const select = buildSelect(cur);
+		const select = buildSelect(cur, cache);
 		let clause: Clause;
 
 		if (isZodLazy(select)) {
