@@ -63,8 +63,8 @@ export type MultiSelect<T extends ZodType<object> | ZodUnion> =
 export type ZodSelect<
 	T extends ZodTuple | ZodType<object> | ZodUnion, TIsSimple extends boolean = false
 > = (
-	T extends ZodUnion ? (RefineZodUnion<T> | ZodUnion)
-		: T extends ZodTuple ? (RefineZodTuple<T> | ZodTuple)
-			: T extends ZodType<object> ? (RefineObject<z.infer<T>, TIsSimple> | ZodType<object>)
+	T extends ZodUnion ? (RefineZodUnion<T> | (TIsSimple extends true ? never : ZodUnion))
+		: T extends ZodTuple ? (RefineZodTuple<T> | (TIsSimple extends true ? never : ZodTuple))
+			: T extends ZodType<object> ? (RefineObject<z.infer<T>, TIsSimple> | (TIsSimple extends true ? never : ZodType<object>))
 				: never
 );
