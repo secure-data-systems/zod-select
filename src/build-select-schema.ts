@@ -152,12 +152,12 @@ function buildSelectMerge(types: ZodType[], cache: Map<ZodType, Clause | ZodLazy
 	return z.union([z.boolean(), result]).optional();
 }
 
-export function buildSelectSchema<T extends ZodType<object> | ZodUnion>(schema: T): ZodType<ZodSelect<T, true>> {
+export function buildSelectSchema<T extends ZodType<object> | ZodUnion>(schema: T): ZodType<ZodSelect<T, true>, ZodSelect<T, true>> {
 	const result = buildSelect(schema);
 
 	if (isZodLazy(result)) {
-		return (result.def.getter().def.innerType as ZodUnion).def.options[1] as ZodType<ZodSelect<T, true>>;
+		return (result.def.getter().def.innerType as ZodUnion).def.options[1] as ZodType<ZodSelect<T, true>, ZodSelect<T, true>>;
 	}
 
-	return (result.def.innerType as ZodUnion).def.options[1] as ZodType<ZodSelect<T, true>>;
+	return (result.def.innerType as ZodUnion).def.options[1] as ZodType<ZodSelect<T, true>, ZodSelect<T, true>>;
 }
