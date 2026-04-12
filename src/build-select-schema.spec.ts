@@ -81,6 +81,33 @@ describe('.buildSelectSchema()', () => {
 		);
 	});
 
+	it('z.infer of a union select schema should be a plain select type', () => {
+		const schema = z.union([
+			z.object({ shared: z.string(), type: z.literal('a'), valueA: z.string() }).strict(),
+			z.object({ shared: z.string(), type: z.literal('b'), valueB: z.number() }).strict()
+		]);
+		const selectSchema = buildSelectSchema(schema);
+
+		// Runtime: the schema correctly parses a plain select object
+		assert.deepEqual(
+			selectSchema.parse({ shared: true, type: true, valueA: true }),
+			{ shared: true, type: true, valueA: true }
+		);
+
+		// Type-level: z.infer should produce a plain object like
+		// { type?: boolean, shared?: boolean, valueA?: boolean, valueB?: boolean }.
+		// Currently ZodSelect<ZodUnion, true> = RefineZodUnion<T> | ZodUnion,
+		// so the inferred type includes the ZodUnion class, making it
+		// unassignable to a plain record.
+		type Inferred = z.infer<typeof selectSchema>;
+
+		const plain: Record<string, boolean | undefined> = {} as Inferred;
+
+		void plain;
+
+		assert.ok(true);
+	});
+
 	it('should support intersections of objects', () => {
 		const schema = z.intersection(
 			z.object({ a: z.string() }),
