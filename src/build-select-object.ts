@@ -3,6 +3,8 @@ import { ZodIntersection, ZodType, ZodUnion } from 'zod';
 import { ZodSelect } from './select.js';
 import { getInnerType, isZodObject, isZodUnion } from './utilities.js';
 
+export type ZodSelectAll<T extends ZodType<object> | ZodUnion> = { [K in keyof ZodSelect<T, true>]-?: true };
+
 /**
  * Produces a runtime select-all object for the given Zod schema.
  *
@@ -16,10 +18,10 @@ import { getInnerType, isZodObject, isZodUnion } from './utilities.js';
  * // { name: true, type: true, isEnabled: true, ... }
  * ```
  */
-export function buildSelectObject<T extends ZodType<object> | ZodUnion>(schema: T): ZodSelect<T, true> {
+export function buildSelectObject<T extends ZodType<object> | ZodUnion>(schema: T): ZodSelectAll<T> {
 	const result: Record<string, true> = {};
 	collectKeys(schema, result);
-	return result as ZodSelect<T, true>;
+	return result as ZodSelectAll<T>;
 }
 
 function collectKeys(schema: ZodType, result: Record<string, true>): void {
