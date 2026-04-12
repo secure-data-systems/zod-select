@@ -3,25 +3,25 @@ import z from 'zod';
 
 import { refineSchema } from '../src/refine-schema.js';
 
-const Individual = z.object({
+const individual = z.object({
 	_id: z.string().regex(/^[a-f\d]{24}$/),
 	firstName: z.string(),
 	lastName: z.string()
 });
 
-const Organization = z.object({
+const organization = z.object({
 	_id: z.string().regex(/^[a-f\d]{24}$/),
 	name: z.string()
 });
 
-const Entity = z.union([Individual, Organization]);
+const entity = z.union([individual, organization]);
 
-const Ticket = z.object({
-	entity: Entity
+const ticket = z.object({
+	entity: entity
 });
 
 const topLevel = refineSchema(
-	Entity,
+	entity,
 	{
 		_id: true,
 		name: true
@@ -29,7 +29,7 @@ const topLevel = refineSchema(
 );
 
 const nLevel = refineSchema(
-	Ticket,
+	ticket,
 	{
 		entity: {
 			_id: true

@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { InferType, ZodSelect } from '../src/select.js';
 
-const UserSchema = z.object({
+const userSchema = z.object({
 	address: z.object({
 		city: z.string(),
 		state: z.string(),
@@ -15,7 +15,7 @@ const UserSchema = z.object({
 	lastName: z.string()
 });
 
-function find<T extends ZodSelect<typeof UserSchema>>(select: T): InferType<typeof UserSchema, T> {
+function find<T extends ZodSelect<typeof userSchema>>(select: T): InferType<typeof userSchema, T> {
 	// ...Find Logic
 	return null as any;
 }

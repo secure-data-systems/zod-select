@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { InferMergedType, InferType, MultiSelect, ZodSelect } from '../src/select.js';
 
-const UserSchema = z.object({
+const userSchema = z.object({
 	address: z.object({
 		city: z.string(),
 		state: z.string(),
@@ -15,7 +15,7 @@ const UserSchema = z.object({
 	lastName: z.string()
 });
 
-function find<T extends MultiSelect<typeof UserSchema>>(select: T): InferMergedType<typeof UserSchema, T> {
+function find<T extends MultiSelect<typeof userSchema>>(select: T): InferMergedType<typeof userSchema, T> {
 	// ...Find Logic
 	return null as any;
 }

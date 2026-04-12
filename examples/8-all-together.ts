@@ -5,7 +5,7 @@ import { mergeSelect } from '../src/merge-select.js';
 import { refineSchema } from '../src/refine-schema.js';
 import { InferMergedType, MergeSelect, MultiSelect } from '../src/select.js';
 
-const UserSchema = z.object({
+const userSchema = z.object({
 	address: z.object({
 		city: z.string(),
 		state: z.string(),
@@ -17,13 +17,13 @@ const UserSchema = z.object({
 	lastName: z.string()
 });
 
-function find<T extends MultiSelect<typeof UserSchema>>(select: T): InferMergedType<typeof UserSchema, T>[] {
+function find<T extends MultiSelect<typeof userSchema>>(select: T): InferMergedType<typeof userSchema, T>[] {
 	const selectArr = Array.isArray(select) ? select : [select];
 	const sel: Record<string, 1> = {};
 
 	for (let schema of selectArr) {
 		if (!(schema instanceof ZodType)) {
-			schema = refineSchema(UserSchema, schema);
+			schema = refineSchema(userSchema, schema);
 			continue;
 		}
 
@@ -35,12 +35,12 @@ function find<T extends MultiSelect<typeof UserSchema>>(select: T): InferMergedT
 	return null as any;
 }
 
-function getUsersFromTexas<T extends MultiSelect<typeof UserSchema>>(
+function getUsersFromTexas<T extends MultiSelect<typeof userSchema>>(
 	sel?: T
-): InferMergedType<typeof UserSchema, MergeSelect<typeof UserSchema, { address: boolean }, T>>[] {
+): InferMergedType<typeof userSchema, MergeSelect<typeof userSchema, { address: boolean }, T>>[] {
 	const users = find(
 		// Use the merge select function to combined a ZodSelect with a MultiSelect
-		mergeSelect(UserSchema, { address: true }, sel)
+		mergeSelect(userSchema, { address: true }, sel)
 	);
 
 	return users.filter(user =>
@@ -51,7 +51,7 @@ function getUsersFromTexas<T extends MultiSelect<typeof UserSchema>>(
 	);
 }
 
-const users = getUsersFromTexas({
+const USERS = getUsersFromTexas({
 	firstName: true,
 	lastName: true
 });

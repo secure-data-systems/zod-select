@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { refineSchema } from '../src/refine-schema.js';
 
-const UserSchema = z.object({
+const userSchema = z.object({
 	address: z.object({
 		city: z.string(),
 		state: z.string(),
@@ -15,7 +15,7 @@ const UserSchema = z.object({
 	lastName: z.string()
 });
 
-const schema = refineSchema(UserSchema, {
+const schema = refineSchema(userSchema, {
 	firstName: s => s.optional()
 });
 
