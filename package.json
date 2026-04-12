@@ -5,9 +5,9 @@
 	"author": "SecureDataSystems",
 	"license": "MIT",
 	"repository": {
-    "type": "git",
-    "url": "git+https://github.com/secure-data-systems/zod-select.git"
-  },
+		"type": "git",
+		"url": "git+https://github.com/secure-data-systems/zod-select.git"
+	},
 	"type": "module",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
@@ -38,7 +38,7 @@
 		"@secure-data-systems/tsconfig": "^1.0.5",
 		"@types/node": "^25.6.0",
 		"tsx": "^4.21.0",
-		"typescript": "^5.9.3"
+		"typescript": "^6.0.2"
 	},
 	"dependencies": {
 		"zod": "^4.3.6"
