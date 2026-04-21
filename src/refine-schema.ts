@@ -182,9 +182,9 @@ export type RefineZodTuple<T extends ZodTuple> =
 
 export type RefineZodUnion<T extends ZodUnion> =
 	{
-		[K in keyof UnionToIntersection<
-			T['options'][number] extends ZodObject<infer Shape extends ZodRawShape> ? Shape : object
-		>]?: boolean;
+		[K in keyof UnionMergedShape<T>]?: UnionMergedShape<T>[K] extends ZodType
+			? UnionFieldType<UnionMergedShape<T>[K]>
+			: boolean;
 	};
 
 // Because Zod handles undefined and nulls as type wrappers instead of unions this type does
@@ -194,6 +194,19 @@ export type TuplifyUnion<T, TDepth extends number = 0, L = LastOf<T>, N = [T] ex
 	TDepth extends 9 ? [] // Stop recursion at depth 9
 		: true extends N ? []
 			: Push<TuplifyUnion<Exclude<T, L>, NextDepth<TDepth>>, InternalZodify<L>>;
+
+type UnionFieldType<T extends ZodType> =
+	z.infer<T> extends Array<infer U>
+		? Exclude<U, null | undefined> extends object
+			? boolean | RefineObject<Extract<U, object>, true>
+			: boolean
+		: Exclude<z.infer<T>, null | undefined> extends object
+			? boolean | RefineObject<Exclude<z.infer<T>, null | undefined>, true>
+			: boolean;
+
+type UnionMergedShape<T extends ZodUnion> = UnionToIntersection<
+	T['options'][number] extends ZodObject<infer Shape extends ZodRawShape> ? Shape : object
+>;
 
 export type UnionToIntersection<U> =
 	(U extends any ? (x: U) => void : never) extends (x: infer I) => void ? I : never;

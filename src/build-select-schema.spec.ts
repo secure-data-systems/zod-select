@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 import { z, ZodBoolean, ZodLazy, ZodObject, ZodOptional, ZodType, ZodUnion } from 'zod';
 
 import { BasicSelect, buildSelectSchema } from './build-select-schema.js';
+import { ZodSelect } from './select.js';
 import { getInnerType, isZodObjectLoose } from './utilities.js';
 
 describe('.buildSelectSchema()', () => {
@@ -321,5 +322,43 @@ describe('.buildSelectSchema()', () => {
 				}
 			}
 		);
+	});
+
+	it('should allow nested object sub-selection in union members', () => {
+		const account = z.object({
+			_id: z.string(),
+			name: z.string()
+		});
+
+		const individual = z.object({
+			account: account.optional(),
+			name: z.object({ first: z.string(), last: z.string() }),
+			type: z.literal('individual')
+		});
+
+		const organization = z.object({
+			account: account.optional(),
+			name: z.string(),
+			type: z.literal('organization')
+		});
+
+		const contact = z.union([individual, organization]);
+		const selectSchema = buildSelectSchema(contact);
+
+		// Runtime: nested sub-selection on a shared nested object field should parse
+		const result = selectSchema.parse({
+			account: { _id: true, name: true },
+			type: true
+		});
+
+		assert.deepStrictEqual(result, {
+			account: { _id: true, name: true },
+			type: true
+		});
+
+		// Type-level: ZodSelect<typeof Contact, true> should accept nested object selection
+		type Select = ZodSelect<typeof contact, true>;
+		const nested: Select = { account: { _id: true, name: true }, type: true };
+		void nested;
 	});
 });
