@@ -1,6 +1,6 @@
 {
 	"name": "zodselect",
-	"version": "1.0.13",
+	"version": "1.0.14",
 	"description": "Type-safe selection utility built on top of Zod. Allows for strongly typed field selection, schema merging, and runtime refinement for frontend or backend use.",
 	"author": "SecureDataSystems",
 	"license": "MIT",
@@ -38,7 +38,7 @@
 		"@secure-data-systems/tsconfig": "^1.0.5",
 		"@types/node": "^25.6.0",
 		"tsx": "^4.21.0",
-		"typescript": "^6.0.2"
+		"typescript": "^6.0.3"
 	},
 	"dependencies": {
 		"zod": "^4.3.6"
