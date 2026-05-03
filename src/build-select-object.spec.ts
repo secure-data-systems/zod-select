@@ -65,7 +65,7 @@ describe('.buildSelectObject()', () => {
 		});
 	});
 
-	it('should only collect top-level keys (not nested)', () => {
+	it('should recursively expand nested objects', () => {
 		const schema = z.object({
 			active: z.boolean(),
 			user: z.object({
@@ -74,6 +74,81 @@ describe('.buildSelectObject()', () => {
 			})
 		});
 
-		assert.deepStrictEqual(buildSelectObject(schema), { active: true, user: true });
+		assert.deepStrictEqual(buildSelectObject(schema), {
+			active: true,
+			user: { age: true, name: true }
+		});
+	});
+
+	it('should recursively expand deeply nested objects', () => {
+		const schema = z.object({
+			name: z.string(),
+			organization: z.object({
+				_id: z.string(),
+				address: z.object({
+					city: z.string(),
+					country: z.string()
+				})
+			})
+		});
+
+		assert.deepStrictEqual(buildSelectObject(schema), {
+			name: true,
+			organization: { _id: true, address: { city: true, country: true } }
+		});
+	});
+
+	it('should expand optional nested objects', () => {
+		const schema = z.object({
+			name: z.string(),
+			organization: z.object({
+				_id: z.string(),
+				name: z.string()
+			}).optional()
+		});
+
+		assert.deepStrictEqual(buildSelectObject(schema), {
+			name: true,
+			organization: { _id: true, name: true }
+		});
+	});
+
+	it('should not expand arrays', () => {
+		const schema = z.object({
+			name: z.string(),
+			tags: z.array(z.string())
+		});
+
+		assert.deepStrictEqual(buildSelectObject(schema), { name: true, tags: true });
+	});
+
+	it('should not expand arrays of objects', () => {
+		const schema = z.object({
+			items: z.array(z.object({ id: z.string(), value: z.number() })),
+			name: z.string()
+		});
+
+		assert.deepStrictEqual(buildSelectObject(schema), { items: true, name: true });
+	});
+
+	it('should handle recursive schemas without infinite loop', () => {
+		interface Node { children?: Node[], name: string, parent?: Node };
+
+		const node: z.ZodType<Node> = z.lazy(() => z.object({
+			children: z.array(node).optional(),
+			name: z.string(),
+			parent: node.optional()
+		}));
+
+		const schema = z.object({
+			name: z.string(),
+			root: node
+		});
+
+		// Should not throw or hang — recursive objects hit depth limit
+		const result = buildSelectObject(schema);
+		assert.strictEqual(result.name, true);
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		assert.ok(typeof result.root === 'object' && result.root !== null);
 	});
 });
