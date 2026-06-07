@@ -196,7 +196,7 @@ export type TuplifyUnion<T, TDepth extends number = 0, L = LastOf<T>, N = [T] ex
 			: Push<TuplifyUnion<Exclude<T, L>, NextDepth<TDepth>>, InternalZodify<L>>;
 
 type UnionFieldType<T extends ZodType> =
-	z.infer<T> extends Array<infer U>
+	Exclude<z.infer<T>, null | undefined> extends Array<infer U>
 		? Exclude<U, null | undefined> extends object
 			? boolean | RefineObject<Extract<U, object>, true>
 			: boolean
