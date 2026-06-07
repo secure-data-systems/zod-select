@@ -134,9 +134,17 @@ type Refinement<T extends ZodType, TIsSimple extends boolean> =
 	TIsSimple extends true ? boolean
 		: ((schema: T) => ZodType) | boolean | ZodType;
 
-// Recursive type to define shape of fields to pick, redefine, or refine
+// Recursive type to define shape of fields to pick, redefine, or refine.
+//
+// The `as` clause strips index-signature keys (a `z.looseObject` carries a
+// `[k: string]: unknown` catchall). Without it `keyof T` collapses to `string | number`
+// and every declared field's value type would come from the catchall (`unknown` ->
+// scalar `boolean`), so declared sub-objects could not be drilled into. Filtering inside
+// `[K in keyof T as ...]` keeps the mapped type homomorphic, so it still distributes over
+// unions (e.g. drilling into a union-of-objects array element). For a plain object with
+// no index signature this is just `keyof T`.
 export type RefineObject<T extends object, TIsSimple extends boolean> = {
-	[K in keyof T]?: RefineType<T[K], TIsSimple>
+	[K in keyof T as string extends K ? never : number extends K ? never : symbol extends K ? never : K]?: RefineType<T[K], TIsSimple>
 };
 
 export type RefineSchema<

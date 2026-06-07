@@ -347,4 +347,45 @@ describe('.refineSchema()', () => {
 		assert.equal(parsed.type, 'organization');
 		assert.deepEqual(parsed.accessLevels, [{ name: 'Admin' }]);
 	});
+
+	it('allows selecting a nested subfield of a declared looseObject field', () => {
+		// Regression test for `RefineObject` collapsing a `z.looseObject`'s declared fields.
+		//
+		// A `z.looseObject` carries a catchall index signature (`[k: string]: unknown`).
+		// `RefineObject` maps over `keyof T`, and when `T` has an index signature `keyof T`
+		// collapses to `string | number`, so every declared field's value type came from the
+		// catchall (`unknown` -> scalar `boolean`). Declared fields could be marked `true` but
+		// could NOT be drilled into. The runtime was unaffected, so this only broke the
+		// type-check (`tsc`), not `tsx --test`.
+		const personName = z.object({
+			first: z.string().optional(),
+			last: z.string().optional()
+		});
+
+		const user = z.looseObject({
+			_id: z.string(),
+			name: personName.optional(),
+			username: z.string()
+		});
+
+		const root = z.object({
+			invitedBy: user
+		});
+
+		// Type-level assertion: drilling into `invitedBy.name.first` is valid and MUST be
+		// assignable to the refine shape. With the bug present this `satisfies` fails to
+		// compile because `invitedBy`'s declared fields collapse to an index signature with
+		// `boolean` values.
+		const select = {
+			invitedBy: { name: { first: true } }
+		} satisfies RefineSchema<typeof root, false>;
+
+		const refined = refineSchema(root, select);
+
+		const parsed = refined.parse({
+			invitedBy: { name: { first: 'Alice' } }
+		});
+
+		assert.equal(parsed.invitedBy.name?.first, 'Alice');
+	});
 });
