@@ -2,7 +2,7 @@ import { strict as assert, deepStrictEqual, throws } from 'assert';
 import { describe, it } from 'node:test';
 import { z, ZodError } from 'zod';
 
-import { refineSchema } from './refine-schema.js';
+import { refineSchema, type RefineSchema } from './refine-schema.js';
 
 describe('.refineSchema()', () => {
 	it('should retain required fields', () => {
@@ -298,5 +298,53 @@ describe('.refineSchema()', () => {
 		parseResult = schema.parse('123 Main Street');
 
 		deepStrictEqual(parseResult, '123 Main Street');
+	});
+
+	it('should accept selecting a subfield of a union member with an optional array-of-objects field', () => {
+		// Regression test for a bug in `UnionFieldType` (refine-schema.ts).
+		//
+		// `UnionFieldType` chose a union member field's refine shape with
+		// `z.infer<T> extends Array<infer U>` but, unlike `RefineType`, it did not
+		// strip `| undefined` first. For an OPTIONAL array-of-objects member
+		// (`field: Obj.array().optional()`), `z.infer<T>` is `Obj[] | undefined`,
+		// which is NOT assignable to `Array<infer U>`, so the field's refine shape
+		// collapsed to `RefineObject<Obj[]>` (the array's own keys) instead of
+		// `RefineObject<Obj>`. The runtime was unaffected, so this only broke the
+		// type-check (`tsc`), not `tsx --test`.
+		const accessLevel = z.object({
+			_id: z.string(),
+			name: z.string()
+		});
+
+		const organizationInvitation = z.object({
+			accessLevels: accessLevel.array().optional(),
+			organizationId: z.string(),
+			type: z.literal('organization')
+		});
+
+		const platformInvitation = z.object({
+			accessLevels: accessLevel.array().optional(),
+			type: z.literal('platform')
+		});
+
+		const invitation = z.discriminatedUnion('type', [organizationInvitation, platformInvitation]);
+
+		// Type-level assertion: drilling into a subfield of the optional array
+		// member is a valid select and MUST be assignable to the refine shape.
+		// With the bug present, this `satisfies` fails to compile.
+		const select = {
+			accessLevels: { name: true },
+			type: true
+		} satisfies RefineSchema<typeof invitation, false>;
+
+		const refined = refineSchema(invitation, select);
+
+		const parsed = refined.parse({
+			accessLevels: [{ name: 'Admin' }],
+			type: 'organization'
+		});
+
+		assert.equal(parsed.type, 'organization');
+		assert.deepEqual(parsed.accessLevels, [{ name: 'Admin' }]);
 	});
 });
