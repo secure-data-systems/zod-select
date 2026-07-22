@@ -4,6 +4,7 @@ export default [
 	...securedatasystems.configs.flat,
 	{
 		ignores: [
+			'.claude/*',
 			'**/dist/*',
 			'**/scripts/*',
 			'eslint.config.mjs',

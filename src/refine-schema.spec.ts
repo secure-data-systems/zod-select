@@ -388,4 +388,61 @@ describe('.refineSchema()', () => {
 
 		assert.equal(parsed.invitedBy.name?.first, 'Alice');
 	});
+
+	it('keeps every option of a small enum in the refined type (control)', () => {
+		const stage = z.enum(['one', 'two', 'three']);
+		const project = z.object({ name: z.string(), stage });
+
+		const refined = refineSchema(project, { stage: true });
+
+		// Type-level assertion: every option must remain assignable to the refined type.
+		const selected: z.infer<typeof refined>[] = [
+			{ stage: 'one' },
+			{ stage: 'two' },
+			{ stage: 'three' }
+		];
+
+		deepStrictEqual(selected.map(s => refined.parse(s).stage), stage.options);
+	});
+
+	it('keeps every option of an enum wider than nine options in the refined type', () => {
+		// Regression test for `TuplifyUnion` (refine-schema.ts) truncating wide enums.
+		//
+		// `TuplifyUnion` spends one recursion level per union member and stops at its
+		// depth cap, so an enum field refined with `true` silently dropped every option
+		// past nine from the refined TYPE — and which options vanished varied with
+		// TypeScript's internal union ordering. Fixed by the ZodLiteral shortcut in
+		// `Zodify`. The runtime was unaffected, so this only broke the type-check
+		// (`tsc`), not `tsx --test`.
+		const stage = z.enum([
+			'draft', 'interviewing', 'interview-complete',
+			'previewing', 'preview-review',
+			'plan-review', 'plan-approved', 'local',
+			'spec-review', 'spec-approved',
+			'implementing', 'module-ready'
+		]);
+
+		const project = z.object({ name: z.string(), stage });
+
+		const refined = refineSchema(project, { stage: true });
+
+		// Type-level assertion: each of the twelve options must remain assignable to
+		// the refined type. With the bug present, three of these assignments fail TS2322.
+		const selected: z.infer<typeof refined>[] = [
+			{ stage: 'draft' },
+			{ stage: 'interviewing' },
+			{ stage: 'interview-complete' },
+			{ stage: 'previewing' },
+			{ stage: 'preview-review' },
+			{ stage: 'plan-review' },
+			{ stage: 'plan-approved' },
+			{ stage: 'local' },
+			{ stage: 'spec-review' },
+			{ stage: 'spec-approved' },
+			{ stage: 'implementing' },
+			{ stage: 'module-ready' }
+		];
+
+		deepStrictEqual(selected.map(s => refined.parse(s).stage), stage.options);
+	});
 });
