@@ -197,6 +197,10 @@ export type RefineZodUnion<T extends ZodUnion> =
 
 // Because Zod handles undefined and nulls as type wrappers instead of unions this type does
 // not handle null and undefined types. They must be stripped out before using this type.
+//
+// The depth cap spends one level per union MEMBER, so members past nine are dropped. Pure
+// string-literal unions (enums) bypass this via the ZodLiteral shortcut in Zodify; the cap
+// cannot simply be removed — unbounded recursion trips TS2589 in generic contexts.
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export type TuplifyUnion<T, TDepth extends number = 0, L = LastOf<T>, N = [T] extends [never] ? true : false> =
 	TDepth extends 9 ? [] // Stop recursion at depth 9
@@ -221,10 +225,23 @@ export type UnionToIntersection<U> =
 
 export type Zodify<T, TDepth extends number = 0> =
 	ApplyOptionalNullable<T,
-		IsTuple<
-			TuplifyUnion<Exclude<T, null | undefined>, TDepth>,
-			ZodUnion<TuplifyUnion<Exclude<T, null | undefined>, TDepth>>,
-			InternalZodify<Exclude<T, null | undefined>, TDepth>
+		IsAny<
+			T,
+			ZodAny,
+
+			// A pure string-literal union becomes one multi-value ZodLiteral. Routing it
+			// through TuplifyUnion instead would spend one recursion level per option and
+			// silently drop options past the depth cap (a 12-option enum kept only 9).
+			[Exclude<T, null | undefined>] extends [string]
+				? string extends Exclude<T, null | undefined>
+					? ZodString
+					: ZodLiteral<Exclude<T, null | undefined>>
+
+				: IsTuple<
+					TuplifyUnion<Exclude<T, null | undefined>, TDepth>,
+					ZodUnion<TuplifyUnion<Exclude<T, null | undefined>, TDepth>>,
+					InternalZodify<Exclude<T, null | undefined>, TDepth>
+				>
 		>
 	>;
 
