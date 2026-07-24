@@ -34,8 +34,8 @@
 		"test": "tsx --tsconfig ./tsconfig.build.json --test ./src/**/*.{spec,test}.ts ./test/**/*.{spec,test}.ts"
 	},
 	"devDependencies": {
-		"@secure-data-systems/eslint-config": "^1.0.38",
-		"@secure-data-systems/tsconfig": "^1.0.6",
+		"@temelyos/eslint-config": "^1.0.38",
+		"@temelyos/tsconfig": "^1.0.6",
 		"@types/node": "^26.1.1",
 		"tsx": "^4.23.1",
 		"typescript": "npm:@typescript/typescript6@^6.0.2",
