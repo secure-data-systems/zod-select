@@ -1,7 +1,7 @@
-import securedatasystems from '@secure-data-systems/eslint-config';
+import temelyos from '@temelyos/eslint-config';
 
 export default [
-	...securedatasystems.configs.flat,
+	...temelyos.configs.flat,
 	{
 		ignores: [
 			'.claude/*',
